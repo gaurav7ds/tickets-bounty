@@ -1,5 +1,6 @@
 import "./globals.css";
 import { Header } from "@/components/header";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function RootLayout({
   children,
@@ -17,6 +18,7 @@ export default function RootLayout({
       >
         <Header />
         <div className="flex-1">{children}</div>
+        <Toaster />
       </body>
     </html>
   );

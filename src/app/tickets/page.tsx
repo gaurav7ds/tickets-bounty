@@ -1,5 +1,5 @@
 import { TicketList } from "@/features/tickets/components/ticket-list";
-import { getTickets } from "@/features/tickets/data";
+import { getTickets } from "@/data/tickets";
 
 export default async function TicketsPage() {
   const tickets = await getTickets();

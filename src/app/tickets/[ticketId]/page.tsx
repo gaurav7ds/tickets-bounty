@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { TicketItem } from "@/features/tickets/components/ticket-item";
-import { getTicketById } from "@/features/tickets/data";
+import { getTicketById } from "@/data/tickets";
 
 export default async function TicketDetailPage({
   params,

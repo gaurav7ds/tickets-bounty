@@ -1,7 +1,7 @@
 import { TicketItem } from "@/features/tickets/components/ticket-item";
-import type { Ticket } from "@/features/tickets/data";
+import type { TicketModel } from "@/generated/prisma/models";
 
-export function TicketList({ tickets }: { tickets: Ticket[] }) {
+export function TicketList({ tickets }: { tickets: TicketModel[] }) {
   if (tickets.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">No tickets yet.</p>

@@ -31,18 +31,28 @@
 ## Folder structure
 - **Routes** live in `src/app/<route>/page.tsx` and stay thin — pages compose feature pieces, they don't own logic.
 - **Features** live in `src/features/<feature-name>/`:
-  - `src/features/<feature-name>/components/` — all components for that feature (`ticket-card.tsx`, `ticket-list.tsx`, etc.).
+  - `src/features/<feature-name>/components/` — all components for that feature (`ticket-item.tsx`, `ticket-list.tsx`, etc.).
   - `src/features/<feature-name>/actions/` — server actions for that feature (`create-ticket.ts`, `claim-ticket.ts`).
-  - `src/features/<feature-name>/data.ts` (or `queries.ts`) — Prisma queries for that feature.
   - `src/features/<feature-name>/types.ts` — feature-local types if not already covered by Prisma-generated types.
+- **Data Access Layer (DAL)** lives in `src/data/<feature-name>.ts` — one file per feature, all Prisma reads for that feature (`getTickets`, `getTicketById`). Auth checks live here too once auth is wired up. Pages and actions go through the DAL — they never call `prisma` directly.
 - **Shared, cross-feature** components → `src/components/`. shadcn primitives → `src/components/ui/`.
 - A page imports from its feature folder; features don't import from `app/`.
 
 ## Server actions
 - All forms and mutations use **server actions**, not API routes.
 - Validate input with zod inside the action. Never trust the form payload.
-- Return a discriminated result (`{ ok: true, data } | { ok: false, error }`) — don't throw for expected user errors.
+- **Return shape — `ActionResult<T>` discriminated union (from `@/lib/action-result`):**
+  ```ts
+  export type ActionResult<T = null> =
+    | { success: true; data: T }
+    | { success: false; errorMessage: string };
+  ```
+  - Always annotate the action's return type as `Promise<ActionResult<T>>` — no `as const` needed; the annotation gives the right contextual narrowing.
+  - Use `data: null` when there's nothing meaningful to return (deletes, etc.). For creates/updates, `T` is the row type from Prisma.
+  - On the client, branch on `result.success` — TypeScript narrows `data` and `errorMessage` automatically.
+  - Don't throw for expected user errors (validation, not-found, permission denied) — return `{ success: false, errorMessage }`. Reserve throws for genuinely unexpected failures.
 - `revalidatePath` / `revalidateTag` after mutations.
+- **Don't `redirect()` from inside an action when the caller needs to react to the result** (e.g. show a toast). Return `{ success: true }` and let the client `router.push(...)` after handling the response. Only redirect from the action for non-JS form posts.
 
 ## Data layer
 - Single Prisma client instance in `src/lib/prisma.ts` (the standard Next.js singleton pattern).
